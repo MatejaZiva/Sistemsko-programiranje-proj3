@@ -38,30 +38,30 @@ namespace Sistemsko_programiranje_proj_3
             Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] SERVER STOPPED. Goodbye.");
         }
 
-        private static void RegisterShutdownHandlers(WebServer server, CancellationTokenSource cts)
-        {
-            Console.CancelKeyPress += (s, e) =>
-            {
-                e.Cancel = true;
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] SHUTDOWN SIGNAL (Ctrl+C)");
-                cts.Cancel();
-                //server.Stop();
-            };
-            _ = Task.Run(() =>
-            {
-                while (!cts.Token.IsCancellationRequested)
-                {
-                    var line = Console.ReadLine();
-                    if (line?.Equals("q", StringComparison.OrdinalIgnoreCase) == true ||
-                        line?.Equals("exit", StringComparison.OrdinalIgnoreCase) == true)
-                    {
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] SHUTDOWN SIGNAL ('q')");
-                        cts.Cancel();
-                        //server.Stop();
-                        break;
-                    }
-                }
-            });
-        }
+        //private static void RegisterShutdownHandlers(WebServer server, CancellationTokenSource cts)
+        //{
+        //    Console.CancelKeyPress += (s, e) =>
+        //    {
+        //        e.Cancel = true;
+        //        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] SHUTDOWN SIGNAL (Ctrl+C)");
+        //        cts.Cancel();
+        //        //server.Stop();
+        //    };
+        //    _ = Task.Run(() =>
+        //    {
+        //        while (!cts.Token.IsCancellationRequested)
+        //        {
+        //            var line = Console.ReadLine();
+        //            if (line?.Equals("q", StringComparison.OrdinalIgnoreCase) == true ||
+        //                line?.Equals("exit", StringComparison.OrdinalIgnoreCase) == true)
+        //            {
+        //                Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] SHUTDOWN SIGNAL ('q')");
+        //                cts.Cancel();
+        //                //server.Stop();
+        //                break;
+        //            }
+        //        }
+        //    });
+        //}
     }
 }

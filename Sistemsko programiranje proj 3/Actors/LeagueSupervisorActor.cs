@@ -44,6 +44,6 @@ namespace Sistemsko_programiranje_proj_3
 
         public static Props CreateProps(TimeSpan pollInterval) =>
             Props.Create(() => new LeagueSupervisorActor(pollInterval))
-                .WithDispatcher("yelp-dispatcher");
+                .WithDispatcher("football-dispatcher");
     }
 }

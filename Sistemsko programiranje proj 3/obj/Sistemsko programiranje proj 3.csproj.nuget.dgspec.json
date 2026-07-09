@@ -53,6 +53,10 @@
             "Akka": {
               "target": "Package",
               "version": "[1.5.70, )"
+            },
+            "System.Reactive": {
+              "target": "Package",
+              "version": "[6.1.0, )"
             }
           },
           "imports": [
