@@ -11,6 +11,9 @@
   <ItemGroup>
     <PackageReference Include="Akka" Version="1.5.70" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
