@@ -1,0 +1,1 @@
+//svi message tipovi kao immutable record-i
