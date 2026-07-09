@@ -9,9 +9,6 @@ namespace Sistemsko_programiranje_proj_3
         private readonly ILoggingAdapter _log = Context.GetLogger();
         private readonly TimeSpan _pollInterval;
 
-
-
-
         public LeagueSupervisorActor(TimeSpan pollInterval)
         {
             _pollInterval = pollInterval;

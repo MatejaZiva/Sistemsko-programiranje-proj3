@@ -3,6 +3,7 @@
 using Akka.Actor;
 using Sistemsko_programiranje_proj_3;
 using Sistemsko_programiranje_proj_3.Conf;
+using Sistemsko_programiranje_proj_3.Rx;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static Sistemsko_programiranje_proj_3.Rx.RxPollingService;
 
 namespace Sistemsko_programiranje_proj_3
 {
@@ -22,7 +24,10 @@ namespace Sistemsko_programiranje_proj_3
 
 
             var pollInterval = TimeSpan.FromMinutes(2);
-            var stateActor = system.ActorOf(LeagueSupervisorActor.CreateProps(pollInterval), "state");
+            var stateActor = system.ActorOf(LeagueSupervisorActor.CreateProps(pollInterval), "league-supervisor");
+
+            //ovo bi trebalo se uradi ali kasnije zato sto bi prvo da radi ovo
+            //var rxService = new RxPollingService(stateActor);
             //var stateActor = system.ActorOf(LeagueSupervisorActor.CreateProps(pollInterval), "state");
             
             var server = new HttpServer(stateActor);
