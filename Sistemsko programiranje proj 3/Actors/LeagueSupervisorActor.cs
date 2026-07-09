@@ -9,9 +9,6 @@ namespace Sistemsko_programiranje_proj_3
         private readonly ILoggingAdapter _log = Context.GetLogger();
         private readonly TimeSpan _pollInterval;
 
-
-
-
         public LeagueSupervisorActor(TimeSpan pollInterval)
         {
             _pollInterval = pollInterval;
@@ -44,6 +41,6 @@ namespace Sistemsko_programiranje_proj_3
 
         public static Props CreateProps(TimeSpan pollInterval) =>
             Props.Create(() => new LeagueSupervisorActor(pollInterval))
-                .WithDispatcher("yelp-dispatcher");
+                .WithDispatcher("football-dispatcher");
     }
 }

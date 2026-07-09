@@ -1,4 +1,5 @@
-using Akka.Actor;
+﻿using Akka.Actor;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,8 @@ namespace Sistemsko_programiranje_proj_3
             _listener.Start();
 
         }
+      
+
         public async Task RunAsync(CancellationToken token)
         {
             try
@@ -54,12 +57,100 @@ namespace Sistemsko_programiranje_proj_3
             catch (HttpListenerException) when (token.IsCancellationRequested) { }
         }
 
-
-        private async Task HandleRequest(HttpListenerContext context)
+        private async Task HandleRequest(HttpListenerContext ctx)
         {
 
+            var league = ctx.Request.QueryString["league"];
+            var season = ctx.Request.QueryString["season"];
+            var requestId = Guid.NewGuid().ToString("N")[..8];
+
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] ── REQUEST [{requestId}] ──────────────────────");
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Method: {ctx.Request.HttpMethod} | URL: {ctx.Request.Url} | Thread: {Thread.CurrentThread.ManagedThreadId}");
+
+            //try
+            //{
+            //    if (string.IsNullOrWhiteSpace(league) || string.IsNullOrWhiteSpace(season))
+            //    {
+            //        await WriteJson(ctx, HttpStatusCode.BadRequest,
+            //            new { error = "Query parameters are required." });
+            //        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] BAD REQUEST [{requestId}] | Missing parameters");
+            //        return;
+            //    }
+
+
+            //    var startTime = DateTime.Now;
+            //    var result = await actorRef.Ask<CachedDataResponse>(
+            //        new GetLeagueData(int.Parse(league), int.Parse(season)),
+            //        TimeSpan.FromSeconds(15));
+            //    var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
+
+            //    if (!result.IsReady)
+            //    {
+            //        await WriteJson(ctx, HttpStatusCode.ServiceUnavailable, new
+            //        {
+            //            league,
+            //            season,
+            //            message = "Data is being fetched, please retry in a few seconds.",
+            //            isReady = false
+            //        });
+
+            //        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] NOT READY [{requestId}] | Location: {location} | Duration: {elapsed:F0}ms");
+            //    }
+            //    else
+            //    {
+            //        await WriteJson(ctx, HttpStatusCode.OK, new
+            //        {
+            //            league,
+            //            season,
+            //            count = result.Teams.Count,
+            //            standings = result.Teams
+            //        }, indented: true);
+
+            //        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] SUCCESS [{requestId}] | Returned {result.Restaurants.Count} restaurants | Duration: {elapsed:F0}ms");
+            //    }
+            //}
+            //    catch (TaskCanceledException)
+            //    {
+            //        Console.WriteLine(
+            //            $"[{DateTime.Now:HH:mm:ss}] TIMEOUT [{requestId}] | Location: {location}");
+
+            //        await WriteJson(ctx, HttpStatusCode.ServiceUnavailable, new
+            //        {
+            //            error = "Podaci se još učitavaju, pokušaj ponovo za par sekundi.",
+
+            //                league,
+            //                season,
+            //                isReady = false,
+            //                retry = true
+            //            });
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine(
+            //            $"[{DateTime.Now:HH:mm:ss}] ERROR [{requestId}] | {ex.GetType().Name}: {ex.Message}");
+
+            //        await WriteJson(ctx, HttpStatusCode.InternalServerError, new
+            //        {
+            //            error = ex.Message,
+            //            retry = false
+            //        });
+            //    }
+            //    finally
+            //    {
+            //        ctx.Response.Close();
+            //    }
         }
 
-
+        private static async Task WriteJson(HttpListenerContext ctx, HttpStatusCode status, object payload, bool indented = false)
+        {
+            var json = JsonConvert.SerializeObject(payload, indented ? Formatting.Indented : Formatting.None);
+            var bytes = Encoding.UTF8.GetBytes(json);
+            ctx.Response.StatusCode = (int)status;
+            ctx.Response.ContentType = "application/json; charset=utf-8";
+            await ctx.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length);
+        }
     }
+
+
 }
+
