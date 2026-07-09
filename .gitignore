@@ -1,4 +1,6 @@
 .vs/
+.vscode/
+*.user
 [Dd]ebug/
 [Rr]elease/
 x64/
@@ -9,3 +11,4 @@ obj/
 *.cache
 *.GeneratedMSBuildEditorConfig.editorconfig
 *AssemblyInfo.cs
+project.assets.json
