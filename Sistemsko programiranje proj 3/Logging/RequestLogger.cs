@@ -1,0 +1,1 @@
+//loguje sve zahteve i obradu

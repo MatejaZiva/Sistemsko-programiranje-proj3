@@ -1,0 +1,1 @@
+//mapiranje JSON -> interni model

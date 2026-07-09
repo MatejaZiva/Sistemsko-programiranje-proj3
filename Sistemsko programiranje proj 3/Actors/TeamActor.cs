@@ -1,0 +1,1 @@
+//čuva stanje jednog tima - pozicija, bodovi, procenat

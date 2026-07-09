@@ -1,0 +1,1 @@
+//klase za deserializaciju API odgovora

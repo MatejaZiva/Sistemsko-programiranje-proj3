@@ -1,0 +1,1 @@
+//record - ime, pozicija, bodovi, odigrane utakmice
