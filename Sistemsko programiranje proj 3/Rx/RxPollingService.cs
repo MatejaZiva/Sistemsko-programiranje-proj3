@@ -14,27 +14,28 @@ namespace Sistemsko_programiranje_proj_3.Rx
 {
     internal class RxPollingService
     {
-        private readonly IActorRef supervisorActor;
-
+        private readonly IScheduler _scheduler;
         private IDisposable? subscription;
 
+        private readonly IActorRef leagueActor;
         private readonly IScheduler scheduler;
+        private readonly IApiClient apiClient;
 
 
-        public RxPollingService(IActorRef supervisorActor)
+        public RxPollingService(IActorRef leagueActor, IApiClient apiClient)
         {
-            this.supervisorActor = supervisorActor;
-
+            this.leagueActor = leagueActor;
+            this.apiClient = apiClient;
             // Rx koristi ThreadPool za izvršavanje
             scheduler = TaskPoolScheduler.Default;
         }
 
 
-        public void Start(IApiClient client, int leagueId, int season, TimeSpan pollingInterval)
+        public void Start(int leagueId, int season, TimeSpan pollingInterval)
         {
             subscription =
                 StandingsObservable
-                    .Create(client, pollingInterval, scheduler)
+                    .Create(apiClient, pollingInterval, scheduler)
                     .Subscribe(
                         standings =>
                         {
@@ -42,7 +43,7 @@ namespace Sistemsko_programiranje_proj_3.Rx
                                 $"[{DateTime.Now:HH:mm:ss}] [Rx] Emitovani podaci za ligu {leagueId}, sezona {season}"
                             );
 
-                            supervisorActor.Tell(
+                            leagueActor.Tell(
                                 new UpdateStandingsMsg(
                                     leagueId,
                                     season,

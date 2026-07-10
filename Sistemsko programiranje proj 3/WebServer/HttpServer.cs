@@ -107,30 +107,15 @@ namespace Sistemsko_programiranje_proj_3
                     Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] NO DATA IN ACTORS [{requestId}], fetching from API...");
                     try
                     {
-                        var apiResponse = await apiClient.GetStandingsAsync();
-                        var standings = DataMapper.MapToTeamStandings(apiResponse);
-                        
-                        // Emituj aktorima za keš
-                        actorRef.Tell(new UpdateStandingsMsg(int.Parse(league), int.Parse(season), standings));
-                        
-                        // Mapuj na TableEntry
-                        var table = standings
-                            .Select(team => new TeamTableEntry(
-                                Position: team.Position,
-                                TeamName: team.TeamName,
-                                Points: team.Points,
-                                PlayedGames: team.Played,
-                                SuccessPercentage: team.Played == 0
-                                    ? 0
-                                    : (double)team.Points / (team.Played * 3) * 100
-                            ))
-                            .ToList();
-
-                        result = new TableResponse(int.Parse(league), int.Parse(season), table);
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] API FALLBACK SUCCESS [{requestId}]");
+                        await actorRef.Ask<bool>(new CreateLeague(int.Parse(league), int.Parse(season)),TimeSpan.FromSeconds(15));
+                        await Task.Delay(4000);
+                        result = await actorRef.Ask<TableResponse>(new GetTableQuery(int.Parse(league), int.Parse(season)),TimeSpan.FromSeconds(15));
+                    
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] API LOAD SUCCESS [{requestId}]");
                     }
                     catch (Exception apiEx)
                     {
+                        Console.WriteLine("AAAAAA PUCA NA WEBSERVER");
                         Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] API FALLBACK ERROR [{requestId}]: {apiEx.Message}");
                     }
                 }
@@ -184,6 +169,8 @@ namespace Sistemsko_programiranje_proj_3
             ctx.Response.StatusCode = (int)status;
             ctx.Response.ContentType = "application/json; charset=utf-8";
             await ctx.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length);
+            await ctx.Response.OutputStream.FlushAsync();
+
         }
     }
 

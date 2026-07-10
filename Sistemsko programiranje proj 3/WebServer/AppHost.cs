@@ -29,20 +29,20 @@ namespace Sistemsko_programiranje_proj_3
                 ?? throw new InvalidOperationException("ApiFootball settings not found");
 
             var system = ActorSystem.Create("footballTables", SystemConfig.getAkkaConfig());
-            var stateActor = system.ActorOf(LeagueSupervisorActor.CreateProps(), "league-supervisor");
 
             // Kreiraj Rx servis
             IApiClient apiClient = USE_MOCK 
                 ? new MockApiFootballClient()
                 : new ApiFootballClient(new HttpClient(), apiSettings);
             
-            var rxService = new RxPollingService(stateActor);
+            var stateActor = system.ActorOf(LeagueSupervisorActor.CreateProps(apiClient), "league-supervisor");
+            //var rxService = new RxPollingService(stateActor, apiClient);
             
             var pollInterval = USE_MOCK 
                 ? TimeSpan.FromSeconds(5)  // Brže za testiranje
                 : TimeSpan.FromSeconds(apiSettings.PollingIntervalSeconds);
             
-            rxService.Start(apiClient, apiSettings.LeagueId, apiSettings.Season, pollInterval);
+            //rxService.Start(apiClient, apiSettings.LeagueId, apiSettings.Season, pollInterval);
             
             var server = new HttpServer(stateActor, apiClient);
             server.Start();

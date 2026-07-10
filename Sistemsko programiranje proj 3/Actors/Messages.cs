@@ -16,3 +16,8 @@ public record TeamTableEntry(
 );
 public record TableResponse(int LeagueId, int Season, IReadOnlyList<TeamTableEntry> Table);
 public record ErrorMsg(string Reason);
+
+public record CreateLeague(
+    int LeagueId,
+    int Season
+);

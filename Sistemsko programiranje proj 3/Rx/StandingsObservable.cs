@@ -2,7 +2,6 @@
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using Sistemsko_programiranje_proj_3.Models;
-
 namespace Sistemsko_programiranje_proj_3.Rx;
 public static class StandingsObservable
 {

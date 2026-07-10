@@ -1,6 +1,7 @@
 using Akka.Actor;
 using Akka.Event;
 using Sistemsko_programiranje_proj_3.Actors;
+using Sistemsko_programiranje_proj_3.Rx;
 using System;
 
 namespace Sistemsko_programiranje_proj_3
@@ -9,10 +10,11 @@ namespace Sistemsko_programiranje_proj_3
     {
         //private readonly ILoggingAdapter _log = Context.GetLogger();
         private readonly Dictionary<(int LeagueId, int Season), IActorRef> leagueActors;
-
-        public LeagueSupervisorActor()
+        private readonly IApiClient apiClient;
+        public LeagueSupervisorActor(IApiClient apiClient)
         {
             leagueActors = new();
+            this.apiClient = apiClient; 
             ConfigureReceivers();
         }
 
@@ -21,33 +23,21 @@ namespace Sistemsko_programiranje_proj_3
             Receive<UpdateStandingsMsg>(HandleUpdateStandings);
 
             Receive<GetTableQuery>(HandleGetTable);
+
+            Receive<CreateLeague>(HandleCreateLeague);
         }
         private void HandleUpdateStandings(UpdateStandingsMsg msg)
         {
 
             var key = (msg.LeagueId, msg.Season);
 
-            //var table = msg.Standings
-            //    .Select(team => new TeamTableEntry(
-            //        Position: team.Position,
-            //        TeamName: team.TeamName,
-            //        Points: team.Points,
-            //        PlayedGames: team.Played,
-            //        SuccessPercentage: team.Played == 0
-            //            ? 0
-            //            : (double)team.Points / (team.Played * 3) * 100
-            //    ))
-            //    .ToList();
-
-
-            //_tables[(msg.LeagueId, msg.Season)] = table;
-
             if (!leagueActors.TryGetValue(key, out var childActor))
             {
                 childActor = Context.ActorOf(
                     LeagueActor.CreateProps(
                         msg.LeagueId,
-                        msg.Season
+                        msg.Season,
+                        apiClient
                     ),
                     $"league-{msg.LeagueId}-season-{msg.Season}"
                 );
@@ -60,6 +50,26 @@ namespace Sistemsko_programiranje_proj_3
             Console.WriteLine($"Updated table: league={msg.LeagueId}, season={msg.Season}");
         }
 
+        private void HandleCreateLeague(CreateLeague msg)
+        {
+            var key = (msg.LeagueId, msg.Season);
+            
+            if (!leagueActors.ContainsKey(key))
+            {
+                var childActor = Context.ActorOf(
+                    LeagueActor.CreateProps(
+                        msg.LeagueId,
+                        msg.Season,
+                        apiClient
+                    )
+                );
+
+                Console.WriteLine($"Created league-{msg.LeagueId}-season-{msg.Season}");
+                leagueActors[key] = childActor;
+            }
+
+            
+        }
 
         private void HandleGetTable(GetTableQuery msg)
         {
@@ -85,18 +95,10 @@ namespace Sistemsko_programiranje_proj_3
             }
         }
 
-
-        //public static Props CreateProps(TimeSpan pollInterval)
-        //{
-        //    return Props.Create(()=> new LeagueSupervisorActor(pollInterval)).WithDispatcher("football-dispatcher");
-        //}
-        public static Props CreateProps()
+        public static Props CreateProps(IApiClient apiClient)
         {
-            return Props.Create<LeagueSupervisorActor>()
+            return Props.Create(()=> new LeagueSupervisorActor(apiClient))
                 .WithDispatcher("football-dispatcher");
         }
-        //public static Props CreateProps(TimeSpan pollInterval) =>
-        //    Props.Create(() => new LeagueSupervisorActor(pollInterval))
-        //        .WithDispatcher("football-dispatcher");
     }
 }

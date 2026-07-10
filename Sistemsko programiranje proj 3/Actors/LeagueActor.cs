@@ -1,4 +1,5 @@
 ﻿using Akka.Actor;
+using Sistemsko_programiranje_proj_3.Rx;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,17 +15,42 @@ namespace Sistemsko_programiranje_proj_3.Actors
         private readonly int _season;
 
         private IReadOnlyList<TeamTableEntry> _table = new List<TeamTableEntry>();
+        private RxPollingService _pollingService;
+        private IApiClient apiClient;
 
-
-        public LeagueActor(int leagueId, int season)
+        public LeagueActor(int leagueId, int season, IApiClient apiClient)
         {
             _leagueId = leagueId;
             _season = season;
-
+            this.apiClient = apiClient;
             Receive<UpdateStandingsMsg>(HandleUpdate);
             Receive<GetTableQuery>(HandleGet);
         }
 
+        protected override void PreStart()
+        {
+            Console.WriteLine(
+                $"[Child] Starting {_leagueId}/{_season}"
+            );
+
+            _pollingService = new RxPollingService(Self, apiClient);
+
+            _pollingService.Start(
+                _leagueId,
+                _season,
+                TimeSpan.FromSeconds(5)
+            );
+        }
+
+        protected override void PostStop()
+        {
+            Console.WriteLine(
+                $"[Child] Stopping {_leagueId}/{_season}"
+            );
+
+
+            _pollingService.Stop();
+        }
 
         private void HandleUpdate(UpdateStandingsMsg msg)
         {
@@ -40,10 +66,10 @@ namespace Sistemsko_programiranje_proj_3.Actors
                 ))
                 .ToList();
 
-            Console.WriteLine(
-                $"[Child] Updated {_leagueId}/{_season}");
+            Console.WriteLine($"[Child] Updated {_leagueId}/{_season}");
+            Console.WriteLine($"[Child] Updated {_leagueId}/{_season}, count={_table.Count}"
+);
         }
-
 
         private void HandleGet(GetTableQuery msg)
         {
@@ -57,9 +83,13 @@ namespace Sistemsko_programiranje_proj_3.Actors
         }
 
 
-        public static Props CreateProps(int leagueId, int season)
+        public static Props CreateProps(
+        int leagueId,
+        int season,
+        IApiClient apiClient)
         {
-            return Props.Create(() => new LeagueActor(leagueId, season)).WithDispatcher("football-dispatcher");
+            return Props.Create(() => new LeagueActor(leagueId, season, apiClient)).WithDispatcher("football-dispatcher");
         }
     }
 }
+
