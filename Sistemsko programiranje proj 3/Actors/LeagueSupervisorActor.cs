@@ -63,14 +63,19 @@ namespace Sistemsko_programiranje_proj_3
 
         private void HandleGetTable(GetTableQuery msg)
         {
+            Console.WriteLine($"[LeagueSupervisor] GetTable traži: league={msg.LeagueId}, season={msg.Season}");
+            Console.WriteLine($"[LeagueSupervisor] Dostupni ključevi: {string.Join(", ", leagueActors.Keys)}");
+            
             if (leagueActors.TryGetValue(
                 (msg.LeagueId, msg.Season),
                 out var childActor))
             {
+                Console.WriteLine($"[LeagueSupervisor] Pronašao child actor, forward-ujem");
                 childActor.Forward(msg);
             }
             else
             {
+                Console.WriteLine($"[LeagueSupervisor] NIJE pronašao child actor! Vraćam praznu listu");
                 Sender.Tell(
                     new TableResponse(
                         msg.LeagueId,

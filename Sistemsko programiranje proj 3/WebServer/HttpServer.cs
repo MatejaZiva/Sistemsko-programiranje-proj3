@@ -1,6 +1,8 @@
 ﻿using Akka.Actor;
 using Newtonsoft.Json;
 using Sistemsko_programiranje_proj_3.Actors;
+using Sistemsko_programiranje_proj_3.Rx;
+using Sistemsko_programiranje_proj_3.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,10 +22,12 @@ namespace Sistemsko_programiranje_proj_3
 
         private readonly HttpListener _listener;
         private readonly IActorRef actorRef;
+        private readonly IApiClient apiClient;
 
-        public HttpServer(IActorRef actorRefParam)
+        public HttpServer(IActorRef actorRefParam, IApiClient apiClientParam)
         {
             actorRef = actorRefParam;
+            apiClient = apiClientParam;
             _listener = new HttpListener();
             _listener.Prefixes.Add("http://localhost:5000/");
         }
@@ -59,6 +63,13 @@ namespace Sistemsko_programiranje_proj_3
 
         private async Task HandleRequest(HttpListenerContext ctx)
         {
+            // Preskoči favicon zahteve
+            if (ctx.Request.Url?.AbsolutePath == "/favicon.ico")
+            {
+                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                ctx.Response.Close();
+                return;
+            }
 
             if (ctx.Request.HttpMethod != "GET")
             {
@@ -85,23 +96,45 @@ namespace Sistemsko_programiranje_proj_3
 
 
                 var startTime = DateTime.Now;
-                //ovde reko da moze breakuje ako nista se ne vrati tako nesto
                 var result = await actorRef.Ask<TableResponse>(
                     new GetTableQuery(int.Parse(league), int.Parse(season)),
                     TimeSpan.FromSeconds(15));
                 var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
 
-                //{
-                //    await WriteJson(ctx, HttpStatusCode.ServiceUnavailable, new
-                //    {
-                //        league,
-                //        season,
-                //        message = "Data is being fetched, please retry in a few seconds.",
-                //        isReady = false
-                //    });
+                // Ako nema podatka u aktorima, pokušaj direktno sa API-jem
+                if (result.Table.Count == 0)
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] NO DATA IN ACTORS [{requestId}], fetching from API...");
+                    try
+                    {
+                        var apiResponse = await apiClient.GetStandingsAsync();
+                        var standings = DataMapper.MapToTeamStandings(apiResponse);
+                        
+                        // Emituj aktorima za keš
+                        actorRef.Tell(new UpdateStandingsMsg(int.Parse(league), int.Parse(season), standings));
+                        
+                        // Mapuj na TableEntry
+                        var table = standings
+                            .Select(team => new TeamTableEntry(
+                                Position: team.Position,
+                                TeamName: team.TeamName,
+                                Points: team.Points,
+                                PlayedGames: team.Played,
+                                SuccessPercentage: team.Played == 0
+                                    ? 0
+                                    : (double)team.Points / (team.Played * 3) * 100
+                            ))
+                            .ToList();
 
-                //    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] NOT READY [{requestId}] | Duration: {elapsed:F0}ms");
-                //}
+                        result = new TableResponse(int.Parse(league), int.Parse(season), table);
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] API FALLBACK SUCCESS [{requestId}]");
+                    }
+                    catch (Exception apiEx)
+                    {
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] API FALLBACK ERROR [{requestId}]: {apiEx.Message}");
+                    }
+                }
+
                 {
                     await WriteJson(ctx, HttpStatusCode.OK, new
                     {
