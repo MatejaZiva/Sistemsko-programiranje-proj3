@@ -11,6 +11,10 @@ namespace Sistemsko_programiranje_proj_3
         //private readonly ILoggingAdapter _log = Context.GetLogger();
         private readonly Dictionary<(int LeagueId, int Season), IActorRef> leagueActors;
         private readonly IApiClient apiClient;
+
+        private readonly Queue<(int, int)> actorQueue = new();
+        private const int MaxActors = 100;
+
         public LeagueSupervisorActor(IApiClient apiClient)
         {
             leagueActors = new();
@@ -33,16 +37,24 @@ namespace Sistemsko_programiranje_proj_3
 
             if (!leagueActors.TryGetValue(key, out var childActor))
             {
-                childActor = Context.ActorOf(
-                    LeagueActor.CreateProps(
-                        msg.LeagueId,
-                        msg.Season,
-                        apiClient
-                    ),
-                    $"league-{msg.LeagueId}-season-{msg.Season}"
-                );
+
+                if (leagueActors.Count >= MaxActors)
+                {
+                    var oldKey = actorQueue.Dequeue();
+
+                    if (leagueActors.TryGetValue(oldKey, out var oldActor))
+                    {
+                        Console.WriteLine($"[Supervisor] Removing actor {oldKey.Item1}/{oldKey.Item2}");
+                    }
+                    Context.Stop(oldActor);
+                    leagueActors.Remove(oldKey);
+                }
+
+
+                childActor = Context.ActorOf(LeagueActor.CreateProps(msg.LeagueId, msg.Season, apiClient), $"league-{msg.LeagueId}-season-{msg.Season}");
 
                 leagueActors[key] = childActor;
+                actorQueue.Enqueue(key);
             }
 
 
@@ -56,6 +68,9 @@ namespace Sistemsko_programiranje_proj_3
             
             if (!leagueActors.ContainsKey(key))
             {
+
+
+
                 var childActor = Context.ActorOf(
                     LeagueActor.CreateProps(
                         msg.LeagueId,
