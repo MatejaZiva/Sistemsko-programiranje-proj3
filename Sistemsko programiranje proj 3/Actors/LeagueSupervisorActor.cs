@@ -45,9 +45,9 @@ namespace Sistemsko_programiranje_proj_3
                     if (leagueActors.TryGetValue(oldKey, out var oldActor))
                     {
                         Console.WriteLine($"[Supervisor] Removing actor {oldKey.Item1}/{oldKey.Item2}");
+                        Context.Stop(oldActor);
+                        leagueActors.Remove(oldKey);
                     }
-                    Context.Stop(oldActor);
-                    leagueActors.Remove(oldKey);
                 }
 
 
@@ -69,8 +69,17 @@ namespace Sistemsko_programiranje_proj_3
             if (!leagueActors.ContainsKey(key))
             {
 
-
-
+                if (leagueActors.Count >= MaxActors) 
+                { 
+                    var oldKey = actorQueue.Dequeue(); 
+                    if (leagueActors.TryGetValue(oldKey, out var oldActor)) 
+                    { 
+                        Console.WriteLine($"[Supervisor] Removing actor {oldKey.Item1}/{oldKey.Item2}");
+                        Context.Stop(oldActor); 
+                        leagueActors.Remove(oldKey); 
+                    } 
+                
+                }
                 var childActor = Context.ActorOf(
                     LeagueActor.CreateProps(
                         msg.LeagueId,
@@ -79,9 +88,9 @@ namespace Sistemsko_programiranje_proj_3
                     ),
                     $"league-{msg.LeagueId}-season-{msg.Season}"
                 );
-
                 Console.WriteLine($"[Supervisor] Created league-{msg.LeagueId}-season-{msg.Season}");
                 leagueActors[key] = childActor;
+                actorQueue.Enqueue(key);
             }
             
             Sender.Tell(true);
