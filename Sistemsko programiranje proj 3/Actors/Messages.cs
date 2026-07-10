@@ -2,10 +2,11 @@
 using Sistemsko_programiranje_proj_3.Models;
 namespace Sistemsko_programiranje_proj_3.Actors;
 
-public record UpdateStandingsMsg(IReadOnlyList<TeamStanding> Standings);
-public record UpdateTeamStateMsg(TeamStanding Standing);
-public record GetTableQuery;
-public record GetTeamQuery(int TeamId);
+public record UpdateStandingsMsg(
+    int LeagueId,
+    int Season,
+    IReadOnlyList<TeamStanding> Standings);
+public record GetTableQuery(int LeagueId, int Season);
 public record TeamTableEntry(
     int Position,
     string TeamName,
@@ -13,6 +14,5 @@ public record TeamTableEntry(
     int PlayedGames,
     double SuccessPercentage   // Points / (PlayedGames * 3) * 100
 );
-public record TableResponse(IReadOnlyList<TeamTableEntry> Table);
-public record TeamResponse(TeamTableEntry? Entry);
+public record TableResponse(int LeagueId, int Season, IReadOnlyList<TeamTableEntry> Table);
 public record ErrorMsg(string Reason);
