@@ -38,7 +38,7 @@ namespace Sistemsko_programiranje_proj_3.Actors
             _pollingService.Start(
                 _leagueId,
                 _season,
-                TimeSpan.FromSeconds(5)
+                TimeSpan.FromSeconds(30)
             );
         }
 

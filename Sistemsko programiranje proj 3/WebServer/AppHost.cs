@@ -1,4 +1,4 @@
-﻿
+﻿//140,39,78
 using Akka.Actor;
 using Microsoft.Extensions.Configuration;
 using Sistemsko_programiranje_proj_3;
@@ -17,7 +17,7 @@ namespace Sistemsko_programiranje_proj_3
 {
     public class AppHost
     {
-        private const bool USE_MOCK = true; // Postavi na false za pravi API
+        private const bool USE_MOCK = false; // Postavi na false za pravi API
 
         public async Task RunAsync()
         {
@@ -36,13 +36,6 @@ namespace Sistemsko_programiranje_proj_3
                 : new ApiFootballClient(new HttpClient(), apiSettings);
             
             var stateActor = system.ActorOf(LeagueSupervisorActor.CreateProps(apiClient), "league-supervisor");
-            var rxService = new RxPollingService(stateActor, apiClient);
-            
-            var pollInterval = USE_MOCK 
-                ? TimeSpan.FromSeconds(5)  // Brže za testiranje
-                : TimeSpan.FromSeconds(apiSettings.PollingIntervalSeconds);
-            
-            rxService.Start(apiSettings.LeagueId, apiSettings.Season, pollInterval);
             
             var server = new HttpServer(stateActor, apiClient);
             server.Start();
