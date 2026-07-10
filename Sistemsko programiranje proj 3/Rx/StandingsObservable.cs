@@ -9,7 +9,7 @@ public static class StandingsObservable
     // Kreira Rx pipeline koji periodično poziva API i emituje mapirane podatke.
     // Scheduler je eksplicitno prosleđen radi zahteva "Rx Scheduler + Akka Dispatcher" (bonus poeni).
     public static IObservable<IReadOnlyList<TeamStanding>> Create(
-        ApiFootballClient client,
+        IApiClient client,
         TimeSpan pollingInterval,
         IScheduler scheduler)
     {

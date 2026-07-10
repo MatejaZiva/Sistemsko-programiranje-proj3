@@ -1,8 +1,9 @@
 ﻿
-
 using Akka.Actor;
+using Microsoft.Extensions.Configuration;
 using Sistemsko_programiranje_proj_3;
 using Sistemsko_programiranje_proj_3.Conf;
+using Sistemsko_programiranje_proj_3.Models;
 using Sistemsko_programiranje_proj_3.Rx;
 using System;
 using System.Collections.Generic;
@@ -11,24 +12,37 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static Sistemsko_programiranje_proj_3.Rx.RxPollingService;
 
 namespace Sistemsko_programiranje_proj_3
 {
     public class AppHost
     {
+        private const bool USE_MOCK = true; // Postavi na false za pravi API
+
         public async Task RunAsync()
         {
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var apiSettings = config.GetSection("ApiFootball").Get<ApiFootballSettings>()
+                ?? throw new InvalidOperationException("ApiFootball settings not found");
+
             var system = ActorSystem.Create("footballTables", SystemConfig.getAkkaConfig());
-            
-
-
-            var pollInterval = TimeSpan.FromMinutes(2);
             var stateActor = system.ActorOf(LeagueSupervisorActor.CreateProps(), "league-supervisor");
 
-            //ovo bi trebalo se uradi ali kasnije zato sto bi prvo da radi ovo
-            //var rxService = new RxPollingService(stateActor);
-            //var stateActor = system.ActorOf(LeagueSupervisorActor.CreateProps(pollInterval), "state");
+            // Kreiraj Rx servis
+            IApiClient apiClient = USE_MOCK 
+                ? new MockApiFootballClient()
+                : new ApiFootballClient(new HttpClient(), apiSettings);
+            
+            var rxService = new RxPollingService(stateActor);
+            
+            var pollInterval = USE_MOCK 
+                ? TimeSpan.FromSeconds(5)  // Brže za testiranje
+                : TimeSpan.FromSeconds(apiSettings.PollingIntervalSeconds);
+            
+            rxService.Start(apiClient, apiSettings.LeagueId, apiSettings.Season, pollInterval);
             
             var server = new HttpServer(stateActor);
             server.Start();

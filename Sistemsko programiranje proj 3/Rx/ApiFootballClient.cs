@@ -4,7 +4,12 @@ using System.Net.Http.Json;
 
 namespace Sistemsko_programiranje_proj_3.Rx;
 
-public class ApiFootballClient
+public interface IApiClient
+{
+    Task<ApiFootballResponse> GetStandingsAsync(CancellationToken ct = default);
+}
+
+public class ApiFootballClient : IApiClient
 {
     private readonly HttpClient _httpClient;
     private readonly ApiFootballSettings _settings;

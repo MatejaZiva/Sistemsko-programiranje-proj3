@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Reactive.Linq;
 using System.Reactive.Concurrency;
 using IScheduler = System.Reactive.Concurrency.IScheduler;
+using Sistemsko_programiranje_proj_3.Actors;
 
 
 namespace Sistemsko_programiranje_proj_3.Rx
@@ -29,42 +30,33 @@ namespace Sistemsko_programiranje_proj_3.Rx
         }
 
 
-        public void Start()
+        public void Start(IApiClient client, int leagueId, int season, TimeSpan pollingInterval)
         {
-            //subscription =
-            //    Observable
-            //        .Interval(
-            //            TimeSpan.FromMinutes(5),
-            //            scheduler
-            //        )
-            //        .StartWith(0)
-            //        .SelectMany(_ =>
-            //        {
-            //            ovde se poziva API
-            //            return StandingsObservable
-            //                .GetLeagueStandings();
-            //        })
-            //        .Subscribe(
-            //            standings =>
-            //            {
-            //                Console.WriteLine(
-            //                    $"[{DateTime.Now}] Rx dobio podatke"
-            //                );
+            subscription =
+                StandingsObservable
+                    .Create(client, pollingInterval, scheduler)
+                    .Subscribe(
+                        standings =>
+                        {
+                            Console.WriteLine(
+                                $"[{DateTime.Now:HH:mm:ss}] [Rx] Emitovani podaci za ligu {leagueId}, sezona {season}"
+                            );
 
-
-            //                supervisorActor.Tell(
-            //                    new UpdateStandingsMessage(
-            //                        standings
-            //                    )
-            //                );
-            //            },
-            //            error =>
-            //            {
-            //                Console.WriteLine(
-            //                    $"Rx ERROR: {error.Message}"
-            //                );
-            //            }
-            //        );
+                            supervisorActor.Tell(
+                                new UpdateStandingsMsg(
+                                    leagueId,
+                                    season,
+                                    standings
+                                )
+                            );
+                        },
+                        error =>
+                        {
+                            Console.WriteLine(
+                                $"[{DateTime.Now:HH:mm:ss}] [Rx] ERROR: {error.Message}"
+                            );
+                        }
+                    );
         }
 
 

@@ -1,2 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using Sistemsko_programiranje_proj_3;
+
+var host = new AppHost();
+await host.RunAsync();

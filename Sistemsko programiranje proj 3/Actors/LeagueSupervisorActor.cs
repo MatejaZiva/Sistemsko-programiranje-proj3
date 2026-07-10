@@ -8,13 +8,10 @@ namespace Sistemsko_programiranje_proj_3
     public class LeagueSupervisorActor : ReceiveActor
     {
         //private readonly ILoggingAdapter _log = Context.GetLogger();
-        private readonly TimeSpan _pollInterval;
-        //private readonly Dictionary<(int LeagueId, int Season), IReadOnlyList<TeamTableEntry>> _tables;
         private readonly Dictionary<(int LeagueId, int Season), IActorRef> leagueActors;
 
-        public LeagueSupervisorActor(TimeSpan pollInterval)
+        public LeagueSupervisorActor()
         {
-            _pollInterval = pollInterval;
             leagueActors = new();
             ConfigureReceivers();
         }
@@ -71,18 +68,14 @@ namespace Sistemsko_programiranje_proj_3
                 out var childActor))
             {
                 childActor.Forward(msg);
-                //Sender.Tell(
-                //    new TableResponse(
-                //        msg.LeagueId,
-                //        msg.Season,
-                //        childActor
-                //    ));
             }
             else
             {
                 Sender.Tell(
-                    new ErrorMsg(
-                        $"No table found for league {msg.LeagueId}, season {msg.Season}"
+                    new TableResponse(
+                        msg.LeagueId,
+                        msg.Season,
+                        new List<TeamTableEntry>()
                     ));
             }
         }
