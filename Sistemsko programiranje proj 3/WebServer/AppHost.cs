@@ -36,13 +36,13 @@ namespace Sistemsko_programiranje_proj_3
                 : new ApiFootballClient(new HttpClient(), apiSettings);
             
             var stateActor = system.ActorOf(LeagueSupervisorActor.CreateProps(apiClient), "league-supervisor");
-            //var rxService = new RxPollingService(stateActor, apiClient);
+            var rxService = new RxPollingService(stateActor, apiClient);
             
             var pollInterval = USE_MOCK 
                 ? TimeSpan.FromSeconds(5)  // Brže za testiranje
                 : TimeSpan.FromSeconds(apiSettings.PollingIntervalSeconds);
             
-            //rxService.Start(apiClient, apiSettings.LeagueId, apiSettings.Season, pollInterval);
+            rxService.Start(apiSettings.LeagueId, apiSettings.Season, pollInterval);
             
             var server = new HttpServer(stateActor, apiClient);
             server.Start();
