@@ -17,7 +17,7 @@ namespace Sistemsko_programiranje_proj_3
 {
     public class AppHost
     {
-        private const bool USE_MOCK = false; // Postavi na false za pravi API
+        private const bool USE_MOCK = true; // Postavi na false za pravi API
 
         public async Task RunAsync()
         {

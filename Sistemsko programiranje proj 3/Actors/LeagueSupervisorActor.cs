@@ -61,15 +61,15 @@ namespace Sistemsko_programiranje_proj_3
                         msg.LeagueId,
                         msg.Season,
                         apiClient
-                    )
+                    ),
+                    $"league-{msg.LeagueId}-season-{msg.Season}"
                 );
 
-                Console.WriteLine($"Created league-{msg.LeagueId}-season-{msg.Season}");
+                Console.WriteLine($"[Supervisor] Created league-{msg.LeagueId}-season-{msg.Season}");
                 leagueActors[key] = childActor;
-                Sender.Tell(true);
             }
-
-
+            
+            Sender.Tell(true);
         }
 
         private void HandleGetTable(GetTableQuery msg)

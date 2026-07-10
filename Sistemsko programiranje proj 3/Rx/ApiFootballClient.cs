@@ -7,6 +7,7 @@ namespace Sistemsko_programiranje_proj_3.Rx;
 public interface IApiClient
 {
     Task<ApiFootballResponse> GetStandingsAsync(CancellationToken ct = default);
+    Task<ApiFootballResponse> GetStandingsAsync(int leagueId, int season, CancellationToken ct = default);
 }
 
 public class ApiFootballClient : IApiClient
@@ -25,7 +26,12 @@ public class ApiFootballClient : IApiClient
 
     public async Task<ApiFootballResponse> GetStandingsAsync(CancellationToken ct = default)
     {
-        var url = $"/standings?league={_settings.LeagueId}&season={_settings.Season}";
+        return await GetStandingsAsync(_settings.LeagueId, _settings.Season, ct);
+    }
+
+    public async Task<ApiFootballResponse> GetStandingsAsync(int leagueId, int season, CancellationToken ct = default)
+    {
+        var url = $"/standings?league={leagueId}&season={season}";
 
         var response = await _httpClient.GetAsync(url, ct);
         response.EnsureSuccessStatusCode();

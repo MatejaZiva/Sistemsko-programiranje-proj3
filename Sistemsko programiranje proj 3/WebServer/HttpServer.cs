@@ -96,33 +96,25 @@ namespace Sistemsko_programiranje_proj_3
 
 
                 var startTime = DateTime.Now;
+                
+                // Prvo kreiraj aktor ako ga nema
+                try
+                {
+                    await actorRef.Ask<bool>(
+                        new CreateLeague(int.Parse(league), int.Parse(season)),
+                        TimeSpan.FromSeconds(2));
+                }
+                catch
+                {
+                    // Aktor već postoji, ili greška - nastavlja dalje
+                }
+
+                // Zatim ask za podatke (aktor će osvežavati asinkreno kroz Rx)
                 var result = await actorRef.Ask<TableResponse>(
                     new GetTableQuery(int.Parse(league), int.Parse(season)),
                     TimeSpan.FromSeconds(15));
+                
                 var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
-
-                // Ako nema podatka u aktorima, pokušaj direktno sa API-jem
-                if (result.Table.Count == 0)
-                {
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] NO DATA IN ACTORS [{requestId}], fetching from API...");
-                    try
-                    {
-                        Console.WriteLine("PRE ASK");
-                        await actorRef.Ask<bool>(new CreateLeague(int.Parse(league), int.Parse(season)),TimeSpan.FromSeconds(15));
-                        Console.WriteLine("POSLE ASK");
-                        await Task.Delay(4000);
-                        Console.WriteLine("PRE ASK2");
-
-                        result = await actorRef.Ask<TableResponse>(new GetTableQuery(int.Parse(league), int.Parse(season)),TimeSpan.FromSeconds(15));
-                        Console.WriteLine("POSLE ASK2");
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] API LOAD SUCCESS [{requestId}]");
-                    }
-                    catch (Exception apiEx)
-                    {
-                        Console.WriteLine("AAAAAA PUCA NA WEBSERVER");
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] API FALLBACK ERROR [{requestId}]: {apiEx.Message}");
-                    }
-                }
 
                 {
                     await WriteJson(ctx, HttpStatusCode.OK, new

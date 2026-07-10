@@ -15,7 +15,7 @@ namespace Sistemsko_programiranje_proj_3.Actors
         private readonly int _season;
 
         private IReadOnlyList<TeamTableEntry> _table = new List<TeamTableEntry>();
-        private RxPollingService _pollingService;
+        private RxPollingService? _pollingService;
         private IApiClient apiClient;
 
         public LeagueActor(int leagueId, int season, IApiClient apiClient)
@@ -48,8 +48,7 @@ namespace Sistemsko_programiranje_proj_3.Actors
                 $"[Child] Stopping {_leagueId}/{_season}"
             );
 
-
-            _pollingService.Stop();
+            _pollingService?.Stop();
         }
 
         private void HandleUpdate(UpdateStandingsMsg msg)

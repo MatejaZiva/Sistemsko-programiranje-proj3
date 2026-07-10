@@ -9,13 +9,15 @@ public static class StandingsObservable
     // Scheduler je eksplicitno prosleđen radi zahteva "Rx Scheduler + Akka Dispatcher" (bonus poeni).
     public static IObservable<IReadOnlyList<TeamStanding>> Create(
         IApiClient client,
+        int leagueId,
+        int season,
         TimeSpan pollingInterval,
         IScheduler scheduler)
     {
         return Observable
             .Interval(pollingInterval, scheduler)
             .StartWith(scheduler, 0) // odmah prvi poziv, ne čekaj prvi interval
-            .SelectMany(_ => Observable.FromAsync(() => client.GetStandingsAsync()))
+            .SelectMany(_ => Observable.FromAsync(() => client.GetStandingsAsync(leagueId, season)))
             .Select(DataMapper.MapToTeamStandings)
             .Where(standings => standings.Count > 0) // osnovno filtriranje - traženo u zadatku
             .Catch<IReadOnlyList<TeamStanding>, Exception>(ex =>

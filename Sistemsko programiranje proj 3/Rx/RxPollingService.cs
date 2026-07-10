@@ -14,7 +14,6 @@ namespace Sistemsko_programiranje_proj_3.Rx
 {
     internal class RxPollingService
     {
-        private readonly IScheduler _scheduler;
         private IDisposable? subscription;
 
         private readonly IActorRef leagueActor;
@@ -35,7 +34,7 @@ namespace Sistemsko_programiranje_proj_3.Rx
         {
             subscription =
                 StandingsObservable
-                    .Create(apiClient, pollingInterval, scheduler)
+                    .Create(apiClient, leagueId, season, pollingInterval, scheduler)
                     .Subscribe(
                         standings =>
                         {

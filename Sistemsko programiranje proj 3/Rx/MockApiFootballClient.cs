@@ -6,6 +6,11 @@ public class MockApiFootballClient : IApiClient
 {
     public async Task<ApiFootballResponse> GetStandingsAsync(CancellationToken ct = default)
     {
+        return await GetStandingsAsync(39, 2024, ct);
+    }
+
+    public async Task<ApiFootballResponse> GetStandingsAsync(int leagueId, int season, CancellationToken ct = default)
+    {
         await Task.Delay(100, ct);
 
         return new ApiFootballResponse(
@@ -13,8 +18,8 @@ public class MockApiFootballClient : IApiClient
             {
                 new LeagueResponseItem(
                     League: new LeagueDto(
-                        Id: 39,
-                        Name: "Premier League",
+                        Id: leagueId,
+                        Name: "Mock League",
                         Standings: new List<List<StandingDto>>
                         {
                             new List<StandingDto>
