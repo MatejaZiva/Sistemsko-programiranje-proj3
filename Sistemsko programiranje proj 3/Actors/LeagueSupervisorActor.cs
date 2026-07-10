@@ -66,9 +66,10 @@ namespace Sistemsko_programiranje_proj_3
 
                 Console.WriteLine($"Created league-{msg.LeagueId}-season-{msg.Season}");
                 leagueActors[key] = childActor;
+                Sender.Tell(true);
             }
 
-            
+
         }
 
         private void HandleGetTable(GetTableQuery msg)

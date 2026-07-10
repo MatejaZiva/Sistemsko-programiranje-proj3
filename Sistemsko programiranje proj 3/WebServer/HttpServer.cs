@@ -107,10 +107,14 @@ namespace Sistemsko_programiranje_proj_3
                     Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] NO DATA IN ACTORS [{requestId}], fetching from API...");
                     try
                     {
+                        Console.WriteLine("PRE ASK");
                         await actorRef.Ask<bool>(new CreateLeague(int.Parse(league), int.Parse(season)),TimeSpan.FromSeconds(15));
+                        Console.WriteLine("POSLE ASK");
                         await Task.Delay(4000);
+                        Console.WriteLine("PRE ASK2");
+
                         result = await actorRef.Ask<TableResponse>(new GetTableQuery(int.Parse(league), int.Parse(season)),TimeSpan.FromSeconds(15));
-                    
+                        Console.WriteLine("POSLE ASK2");
                         Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] API LOAD SUCCESS [{requestId}]");
                     }
                     catch (Exception apiEx)
@@ -164,6 +168,7 @@ namespace Sistemsko_programiranje_proj_3
 
         private static async Task WriteJson(HttpListenerContext ctx, HttpStatusCode status, object payload, bool indented = false)
         {
+                
             var json = JsonConvert.SerializeObject(payload, indented ? Formatting.Indented : Formatting.None);
             var bytes = Encoding.UTF8.GetBytes(json);
             ctx.Response.StatusCode = (int)status;
